@@ -146,85 +146,133 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 4000);
 });
 
-// Download Resume Button
+// View Resume Button (Shows Resume Image in Modal)
 document.addEventListener('DOMContentLoaded', () => {
   const downloadResumeBtn = document.getElementById('download-resume-btn');
   
+  // Resume image path
+  const resumeImagePath = "images/Resume.png";
+  
+  // Create modal for displaying resume image (only once)
+  let modal = null;
+  let resumeImage = null;
+  
+  function createResumeModal() {
+    if (modal) return { modal, resumeImage };
+    
+    modal = document.createElement('div');
+    modal.id = 'resume-modal';
+    modal.style.cssText = `
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      overflow: auto;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #fff;
+      font-size: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10001;
+      line-height: 1;
+    `;
+    closeBtn.onmouseover = () => closeBtn.style.color = '#ff3333';
+    closeBtn.onmouseout = () => closeBtn.style.color = '#fff';
+    
+    resumeImage = document.createElement('img');
+    resumeImage.id = 'resume-image';
+    resumeImage.style.cssText = `
+      max-width: 100%;
+      max-height: 95vh;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      display: block;
+    `;
+    
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    });
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+    
+    modalContent.appendChild(closeBtn);
+    modalContent.appendChild(resumeImage);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    return { modal, resumeImage };
+  }
+  
   if (downloadResumeBtn) {
-    downloadResumeBtn.addEventListener('click', async () => {
-      // Try multiple possible paths for the resume
-      const possiblePaths = [
-        "resume/Suraj's Resume.pdf",
-        "Suraj's Resume.pdf",
-        "images/Suraj's Resume.pdf",
-        "resume/Suraj_Resume.pdf",
-        "Suraj_Resume.pdf"
-      ];
-      
-      const resumePath = possiblePaths[0]; // Primary path
-      const fileName = "Suraj's Resume.pdf";
-      
+    const modalData = createResumeModal();
+    modal = modalData.modal;
+    resumeImage = modalData.resumeImage;
+    
+    downloadResumeBtn.addEventListener('click', () => {
       // Show loading state
       const originalText = downloadResumeBtn.innerHTML;
-      downloadResumeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
+      downloadResumeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
       downloadResumeBtn.style.backgroundColor = '#474af0';
       downloadResumeBtn.style.color = '#fff';
       downloadResumeBtn.style.borderColor = '#474af0';
       downloadResumeBtn.disabled = true;
       
-      try {
-        // Method 1: Try fetch API for better download control
-        const response = await fetch(resumePath);
-        
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          link.style.display = 'none';
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Clean up the URL
-          window.URL.revokeObjectURL(url);
-          
-          // Show success
-          downloadResumeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Downloaded!';
-          downloadResumeBtn.style.backgroundColor = '#25D366';
-        } else {
-          throw new Error('File not found');
-        }
-      } catch (error) {
-        // Method 2: Fallback to direct link method
-        console.log('Fetch failed, trying direct link method...');
-        
-        const link = document.createElement('a');
-        link.href = resumePath;
-        link.download = fileName;
-        link.target = '_blank';
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Show success (even if it opens in new tab)
-        downloadResumeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Opening...';
-        downloadResumeBtn.style.backgroundColor = '#25D366';
-      }
+      // Set image source directly
+      resumeImage.src = resumeImagePath;
       
-      // Reset button after 2 seconds
-      setTimeout(() => {
+      // When image loads, show modal
+      resumeImage.onload = () => {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Reset button immediately
         downloadResumeBtn.innerHTML = originalText;
         downloadResumeBtn.style.backgroundColor = 'transparent';
         downloadResumeBtn.style.color = '#000';
         downloadResumeBtn.style.borderColor = '#000';
         downloadResumeBtn.disabled = false;
-      }, 2000);
+      };
+      
+      // Handle error
+      resumeImage.onerror = () => {
+        alert('Resume image not found. Please ensure "Resume.png" is in the images folder.');
+        downloadResumeBtn.innerHTML = originalText;
+        downloadResumeBtn.style.backgroundColor = 'transparent';
+        downloadResumeBtn.style.color = '#000';
+        downloadResumeBtn.style.borderColor = '#000';
+        downloadResumeBtn.disabled = false;
+      };
     });
   }
 });

@@ -145,3 +145,55 @@ document.addEventListener("DOMContentLoaded", () => {
     mainPage.classList.add("visible");
   }, 4000);
 });
+
+// Contact Form - WhatsApp Integration
+document.addEventListener('DOMContentLoaded', () => {
+  const contactForm = document.getElementById('contact-form');
+  const whatsappNumber = '918275838256'; // Your WhatsApp number without + sign
+
+  if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault(); // Prevent default form submission
+
+      // Get form values
+      const name = contactForm.querySelector('input[name="user_name"]').value.trim();
+      const email = contactForm.querySelector('input[name="user_email"]').value.trim();
+      const message = contactForm.querySelector('textarea[name="message"]').value.trim();
+
+      // Validate form fields
+      if (!name || !email || !message) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      // Format the message for WhatsApp
+      const whatsappMessage = `*New Message from your Portfolio Website*\n\n*Name:* ${name}\n*Email:* ${email}\n\n*Message:*\n${message}`;
+
+      // Encode the message for URL
+      const encodedMessage = encodeURIComponent(whatsappMessage);
+
+      // Create WhatsApp URL (number format: country code + number without spaces or +)
+      // Note: WhatsApp requires user to click send button - auto-send is not possible for security
+      const whatsappURL = `https://wa.me/918275838256?text=${encodedMessage}`;
+
+      // Open WhatsApp Web/App with pre-filled message
+      // User will need to click send button in WhatsApp
+      window.open(whatsappURL, '_blank');
+
+      // Optional: Show success message
+      const submitButton = contactForm.querySelector('.btn-send');
+      const originalText = submitButton.textContent;
+      submitButton.textContent = 'Message Sent! ✓';
+      submitButton.style.backgroundColor = '#25D366';
+      
+      // Reset form
+      contactForm.reset();
+
+      // Reset button after 3 seconds
+      setTimeout(() => {
+        submitButton.textContent = originalText;
+        submitButton.style.backgroundColor = '#474af0';
+      }, 3000);
+    });
+  }
+});

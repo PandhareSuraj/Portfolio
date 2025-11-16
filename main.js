@@ -146,6 +146,89 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 4000);
 });
 
+// Download Resume Button
+document.addEventListener('DOMContentLoaded', () => {
+  const downloadResumeBtn = document.getElementById('download-resume-btn');
+  
+  if (downloadResumeBtn) {
+    downloadResumeBtn.addEventListener('click', async () => {
+      // Try multiple possible paths for the resume
+      const possiblePaths = [
+        "resume/Suraj's Resume.pdf",
+        "Suraj's Resume.pdf",
+        "images/Suraj's Resume.pdf",
+        "resume/Suraj_Resume.pdf",
+        "Suraj_Resume.pdf"
+      ];
+      
+      const resumePath = possiblePaths[0]; // Primary path
+      const fileName = "Suraj's Resume.pdf";
+      
+      // Show loading state
+      const originalText = downloadResumeBtn.innerHTML;
+      downloadResumeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Downloading...';
+      downloadResumeBtn.style.backgroundColor = '#474af0';
+      downloadResumeBtn.style.color = '#fff';
+      downloadResumeBtn.style.borderColor = '#474af0';
+      downloadResumeBtn.disabled = true;
+      
+      try {
+        // Method 1: Try fetch API for better download control
+        const response = await fetch(resumePath);
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.style.display = 'none';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up the URL
+          window.URL.revokeObjectURL(url);
+          
+          // Show success
+          downloadResumeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Downloaded!';
+          downloadResumeBtn.style.backgroundColor = '#25D366';
+        } else {
+          throw new Error('File not found');
+        }
+      } catch (error) {
+        // Method 2: Fallback to direct link method
+        console.log('Fetch failed, trying direct link method...');
+        
+        const link = document.createElement('a');
+        link.href = resumePath;
+        link.download = fileName;
+        link.target = '_blank';
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success (even if it opens in new tab)
+        downloadResumeBtn.innerHTML = '<i class="fa-solid fa-check"></i> Opening...';
+        downloadResumeBtn.style.backgroundColor = '#25D366';
+      }
+      
+      // Reset button after 2 seconds
+      setTimeout(() => {
+        downloadResumeBtn.innerHTML = originalText;
+        downloadResumeBtn.style.backgroundColor = 'transparent';
+        downloadResumeBtn.style.color = '#000';
+        downloadResumeBtn.style.borderColor = '#000';
+        downloadResumeBtn.disabled = false;
+      }, 2000);
+    });
+  }
+});
+
 // Contact Form - WhatsApp Integration
 document.addEventListener('DOMContentLoaded', () => {
   const contactForm = document.getElementById('contact-form');
